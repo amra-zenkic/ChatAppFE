@@ -1,0 +1,100 @@
+.chat-area {
+  height: calc(100vh - 30px);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0px;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.messages {
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  /*padding-right: 10px;  da ne seku poruke skrolbarom */
+}
+
+
+.chat-header {
+  font-size: 1.2em;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+
+
+.message {
+  max-width: 60%;
+  min-width: 30%;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sent {
+  align-self: flex-end;
+  background-color: #009688;
+}
+
+.received {
+  align-self: flex-start;
+  background-color: #555;
+}
+
+.chat-input {
+  display: flex;
+  margin-top: 10px;
+  gap: 10px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+}
+
+.chat-input button {
+  padding: 10px 20px;
+  background-color: #00bcd4;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+}
+.message-username {
+  font-weight: lighter;
+  font-style: italic;
+  opacity: 0.8;
+  font-size: 0.8em;
+  margin: 0;
+}
+.message-timestamp {
+  font-weight: lighter;
+  font-style: italic;
+  opacity: 0.8;
+  font-size: 0.7em;
+  margin: 0;
+  text-align: right;
+  padding: 0;
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .message {
+    max-width: 80%;
+  }
+}
