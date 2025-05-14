@@ -23,6 +23,7 @@ function App() {
   const [username, setUsername] = useState("");
   const [messages, setMessages] = useState([]);
   const [activeUsers, setActiveUsers] = useState([]);
+  const [startedConversations, setStartedConversations] = useState([]);
 
   useEffect(() => {
     activeChatRef.current = activeChat;
@@ -102,15 +103,49 @@ useEffect(() => {
       setMessages((prev) => [...prev, { username, message, sentAt }]);
     }
   });
-
+/*
 connection.on("ReceivePrivateMessage", (username, message, sentAt, chatRoom) => {
   console.log("Received private message:", message, "from", username);
   console.log("activeChat", activeChatRef.current);
   console.log("chatRoom", chatRoom);
+  // adding to startedConversations if it's the first message or if it's a new message marking it
+  
   if(chatRoom === activeChatRef.current || username === getCookie("username")){
     setMessages((prev) => [...prev, { username, message, sentAt }]);
   }
 });
+*/
+connection.on("ReceivePrivateMessage", (sender, receiver, message, sentAt, chatRoom) => {
+  // senderUsername -sender, chatRoom - receiver/sender
+  console.log("Received private message:", message, "from", sender.username);
+  console.log("activeChat", activeChatRef.current);
+  console.log("chatRoom", chatRoom);
+
+
+  // if its active chat add message
+  if (chatRoom === activeChatRef.current || sender.username === getCookie("username")) {
+    setMessages((prev) => [...prev, { username: sender.username, message, sentAt }]);
+  }
+  const usernameToCheck = getCookie("username") == sender.username ? receiver.username : sender.username;
+  const idToCheck = getCookie("username") == sender.username ? receiver.id : sender.id;
+  // update startedConversations
+  setStartedConversations((prev) => {
+    const exists = prev.find(c => c.username === usernameToCheck);
+
+    if (!exists) {
+      // Dodaj novog korisnika
+      return [...prev, { username: usernameToCheck, userId: idToCheck, newMessages: chatRoom !== activeChatRef.current }];
+    } else {
+      // Ažuriraj newMessages ako nije aktivni chat
+      return prev.map(c =>
+        c.username === usernameToCheck
+          ? { ...c, newMessages: chatRoom !== activeChatRef.current ? true : false }
+          : c
+      );
+    }
+  });  
+});
+
 connection.on("UserLeft", (userId, username) => {
   console.log("User left:", userId);
   toast.info(`${username} left the chat`, {
@@ -181,6 +216,8 @@ connection.on("UserLeft", (userId, username) => {
       <Sidebar
         setActiveChat={setActiveChat}
         setActiveChatUsername={setActiveChatUsername}
+        startedConversations={startedConversations}
+        setStartedConversations={setStartedConversations}
         show={showSidebar}
         closeSidebar={() => setShowSidebar(false)}
         activeUsers={activeUsers}
