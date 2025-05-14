@@ -3,20 +3,28 @@ import "../ChatArea.css";
 
 
 
-const ChatArea = ({ activeChat, currentUser, messages, setMessages, conn}) => {
+const ChatArea = ({ activeChat, currentUser, messages, setMessages, conn, getCookie}) => {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
 
   // Scroll to bottom on new message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    console.log("messages", messages);
   }, [messages]);
 
   const handleSend = async () => {
     if (input.trim() !== "") {
       if (conn) {
         try {
-          await conn.invoke("SendMessage", input);
+          //await conn.invoke("SendMessage", input);
+          if (activeChat === "group") {
+            console.log("Sending message:", input, "from ", getCookie("userId"));
+            await conn.invoke("SendMessage",getCookie("userId"), input);
+          } else {
+            console.log("Sending private message:", input, "from ", getCookie("userId"), "to", activeChat);
+            await conn.invoke("SendPrivateMessage", getCookie("userId"), activeChat, input);
+          }
         } catch (error) {
           console.error("Failed to send message:", error);
         }
