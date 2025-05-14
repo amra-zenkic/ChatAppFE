@@ -3,7 +3,7 @@ import "../ChatArea.css";
 
 
 
-const ChatArea = ({ activeChat, currentUser, messages, setMessages, conn, getCookie}) => {
+const ChatArea = ({ activeChat,activeChatUsername, currentUser, messages, setMessages, conn, getCookie}) => {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
 
@@ -40,7 +40,7 @@ const ChatArea = ({ activeChat, currentUser, messages, setMessages, conn, getCoo
   return (
     <div className="chat-area">
       <div className="chat-header">
-        {activeChat === "group" ? "Global Group Chat" : `Chat with ${activeChat}`}
+        {activeChat === "group" ? "Global Group Chat" : `Chat with ${activeChatUsername}`}
       </div>
       <div className="messages">
         {messages.map((msg, idx) => (

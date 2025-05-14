@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../Sidebar.css";
 
-const Sidebar = ({ setActiveChat, show, closeSidebar, activeUsers, setActiveUsers, getCookie, loadMessages}) => {
+const Sidebar = ({ setActiveChat, setActiveChatUsername, show, closeSidebar, activeUsers, setActiveUsers, getCookie, loadMessages}) => {
   
   useEffect(() => {
     fetch("https://localhost:44368/users/active")
@@ -26,7 +26,11 @@ const Sidebar = ({ setActiveChat, show, closeSidebar, activeUsers, setActiveUser
       <div className="sidebar-section">
         <h3>Person</h3>
         {activeUsers.map((user) => (
-          <div key={user.id} className="chat-item" onClick={() => {loadMessages(user.id); setActiveChat(user.id); closeSidebar(); }}>
+          <div key={user.id} className="chat-item" onClick={() => {
+            loadMessages(user.id); 
+            setActiveChat(user.id); 
+            setActiveChatUsername(user.username); 
+            closeSidebar(); }}>
             <span className="green-dot"></span> {user.username}
           </div>
         ))}

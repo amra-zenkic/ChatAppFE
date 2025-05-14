@@ -16,6 +16,7 @@ function App() {
 
   const [conn, setConnection] = useState(null);
   const [activeChat, setActiveChat] = useState("group"); // group or id of user in private chat
+  const [activeChatUsername, setActiveChatUsername] = useState("Group");
   const [showSidebar, setShowSidebar] = useState(false);
   const [username, setUsername] = useState("");
   const [messages, setMessages] = useState([]);
@@ -48,12 +49,13 @@ function App() {
   };
 
   useEffect(() => {
+    /*
     const userName = getCookie("userId");
     if(userName){
       setUsername(userName);
       //addSinglarConnection(userName);
     }
-    else {
+    else {*/
       fetch("https://localhost:44368/users/create", {
         method: "POST",
       })
@@ -66,7 +68,7 @@ function App() {
           //addSinglarConnection(data.username);
           
         });
-    }
+    //}
 }, []);
 useEffect(() => {
   if (!username) return;
@@ -76,44 +78,36 @@ useEffect(() => {
     .configureLogging(LogLevel.Information)
     .build();
 
-  connection.on("ReceiveMessage", (username, message, userName, sentAt) => {
-        setActiveUsers((prev) => [...prev, userName]);
-        setMessages((prev) => [...prev, { username, message, sentAt }]);
-      });
-      /*
- connection.on("ReceiveSpecificMessage", (username, message, sentAt, chatRoom) => {
-        console.log("Dodajem grupnu poruku");
-        console.log("Ali je chatroom", chatRoom, "i activeChat", activeChat);
-        if(chatRoom === activeChat) { // chatroom == "group"
-          setMessages((prev) => [...prev, { username, message, sentAt }]);
-        }
-      });
-
-      connection.on("ReceivePrivateMessage", (username, message, sentAt, chatRoom) => {
-        console.log("Received private message (iz ReceivePrivateMessage):", message, "from", username);
-        console.log("activeChat", activeChat);
-        console.log("chatRoom", chatRoom);
-        if(activeChat === chatRoom){
-          setMessages((prev) => [...prev, { username, message, sentAt }]);
-        }
-      });
-      */
-     connection.on("ReceiveSpecificMessage", (username, message, sentAt, chatRoom) => {
-  console.log("Dodajem grupnu poruku");
-  console.log("Ali je chatroom", chatRoom, "i activeChat", activeChatRef.current);
-  if(chatRoom === activeChatRef.current) {
+  connection.on("ReceiveMessage", (username, message, user, sentAt) => {
+    console.log("NOVI KORISNIK", user.username);
+    setActiveUsers((prev) => [...prev, user]);
     setMessages((prev) => [...prev, { username, message, sentAt }]);
-  }
-});
+  });
+
+  connection.on("ReceiveSpecificMessage", (username, message, sentAt, chatRoom) => {
+    console.log("Dodajem grupnu poruku");
+    console.log("Ali je chatroom", chatRoom, "i activeChat", activeChatRef.current);
+    if(chatRoom === activeChatRef.current) {
+      setMessages((prev) => [...prev, { username, message, sentAt }]);
+    }
+  });
 
 connection.on("ReceivePrivateMessage", (username, message, sentAt, chatRoom) => {
   console.log("Received private message:", message, "from", username);
   console.log("activeChat", activeChatRef.current);
   console.log("chatRoom", chatRoom);
-  if(chatRoom === activeChatRef.current){
+  if(chatRoom === activeChatRef.current || username === getCookie("username")){
     setMessages((prev) => [...prev, { username, message, sentAt }]);
   }
 });
+connection.on("UserLeft", (userId, username) => {
+  console.log("User left:", userId);
+  if(activeChatRef.current === userId || activeChatRef.current === "group"){
+    setMessages((prev) => [...prev, { username: "admin", message: `${username} left the ChatApp`, sentAt: new Date().toISOString() }]);
+  }
+  setActiveUsers((prev) => prev.filter(u => u.id !== userId));
+});
+
 
 
   connection.start()
@@ -124,9 +118,21 @@ connection.on("ReceivePrivateMessage", (username, message, sentAt, chatRoom) => 
     })
     .catch(err => console.error("SignalR connection error:", err));
 
+  const handleBeforeUnload = () => {
+    const userId = getCookie("userId");
+    connection.invoke("UserLeft", userId);
+    //navigator.sendBeacon(`https://localhost:44368/users/updateStatus/${userId}`)
+    //conn.stop()
+    
+  };
+
+  window.addEventListener("beforeunload", handleBeforeUnload);
+
   return () => {
+    window.removeEventListener("beforeunload", handleBeforeUnload);
     connection.stop();
   };
+
 }, [username]);
 
 
@@ -135,6 +141,7 @@ connection.on("ReceivePrivateMessage", (username, message, sentAt, chatRoom) => 
 
   const loadMessages = (chatName) => {
     if(chatName === "group"){
+      setActiveChatUsername("Group");
       fetchGroupMessages();
     }
     else{
@@ -156,6 +163,7 @@ connection.on("ReceivePrivateMessage", (username, message, sentAt, chatRoom) => 
       </div>
       <Sidebar
         setActiveChat={setActiveChat}
+        setActiveChatUsername={setActiveChatUsername}
         show={showSidebar}
         closeSidebar={() => setShowSidebar(false)}
         activeUsers={activeUsers}
@@ -165,6 +173,7 @@ connection.on("ReceivePrivateMessage", (username, message, sentAt, chatRoom) => 
       />
       <ChatArea
         activeChat={activeChat}
+        activeChatUsername={activeChatUsername}
         currentUser={username}
         messages={messages}
         setMessages={setMessages}
