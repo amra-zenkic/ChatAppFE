@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../Sidebar.css";
 
 const Sidebar = ({ setActiveChat, show, closeSidebar, activeUsers, setActiveUsers, getCookie, loadMessages}) => {
-  //const activeUsers = ["Wealth", "Amirae", "Blessing", "Tez"];
-  const privateChats = ["Wealth", "Amirae", "Blessing", "Tez"];
+  
   useEffect(() => {
     fetch("https://localhost:44368/users/active")
       .then((res) => res.json())

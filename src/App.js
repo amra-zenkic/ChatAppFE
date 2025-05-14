@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, use } from "react";
 import Sidebar from "./components/Sidebar";
 import ChatArea from "./components/ChatArea";
 import "./App.css";
@@ -15,22 +15,19 @@ function App() {
 	};
 
   const [conn, setConnection] = useState(null);
-  const [activeChat, setActiveChat] = useState("group");
+  const [activeChat, setActiveChat] = useState("group"); // group or id of user in private chat
   const [showSidebar, setShowSidebar] = useState(false);
-  const [username, setUsername] = useState(getCookie("username") || generateRandomUsername());
+  const [username, setUsername] = useState("");
   const [messages, setMessages] = useState([]);
   const [activeUsers, setActiveUsers] = useState([]);
 
-  function generateRandomUsername() {
+  useEffect(() => {
+    activeChatRef.current = activeChat;
+  }, [activeChat]);
 
-    const adjectives = ["Fast", "Smart", "Happy", "Crazy", "Silent", "Golden", "Secret"];
-    const nouns = ["Lion", "Tiger", "Dragon", "Wolf", "Bear", "Falcon", "Lynx"];
-    const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const noun = nouns[Math.floor(Math.random() * nouns.length)];
-    const timePart = Date.now().toString().slice(-4);
-    const randomPart = Math.floor(Math.random() * 100).toString().padStart(2, '0');
-    return `${adjective}${noun}${timePart}${randomPart}`;
-  }
+  const activeChatRef = useRef(activeChat);
+
+
   // Function to set a cookie
 	const setCookieFunction = (name, value, days) => {
 		let expires = "";
@@ -50,70 +47,91 @@ function App() {
       });
   };
 
-	
-
   useEffect(() => {
-    // TODO: korisnika ubaciti u bazu, u cookie spremiti id i username
-    // pa tek onda ga konektovati na signalR
-    const connection = new HubConnectionBuilder()
-      .withUrl("https://localhost:44368/Chat?userId=" + username)
-      .configureLogging(LogLevel.Information)
-      .build();
+    const userName = getCookie("userId");
+    if(userName){
+      setUsername(userName);
+      //addSinglarConnection(userName);
+    }
+    else {
+      fetch("https://localhost:44368/users/create", {
+        method: "POST",
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("new user", data);
+          setCookieFunction("userId", data.id, 3);
+          setCookieFunction("username", data.username, 3);
+          setUsername(data.username);
+          //addSinglarConnection(data.username);
+          
+        });
+    }
+}, []);
+useEffect(() => {
+  if (!username) return;
 
-      fetchGroupMessages();
-      
+  const connection = new HubConnectionBuilder()
+    .withUrl(`https://localhost:44368/Chat?userId=${username}`)
+    .configureLogging(LogLevel.Information)
+    .build();
 
-      connection.on("ReceiveMessage", (username, message, userName, sentAt) => {
+  connection.on("ReceiveMessage", (username, message, userName, sentAt) => {
         setActiveUsers((prev) => [...prev, userName]);
         setMessages((prev) => [...prev, { username, message, sentAt }]);
       });
-
-      connection.on("ReceiveSpecificMessage", (username, message, sentAt) => {
-        setMessages((prev) => [...prev, { username, message, sentAt }]);
+      /*
+ connection.on("ReceiveSpecificMessage", (username, message, sentAt, chatRoom) => {
+        console.log("Dodajem grupnu poruku");
+        console.log("Ali je chatroom", chatRoom, "i activeChat", activeChat);
+        if(chatRoom === activeChat) { // chatroom == "group"
+          setMessages((prev) => [...prev, { username, message, sentAt }]);
+        }
       });
 
-      connection.on("ReceivePrivateMessage", (username, message, sentAt) => {
-        console.log("Received private message:", message, "from", username);
-        setMessages((prev) => [...prev, { username, message, sentAt }]); // ✅
-
-      })
-
-      connection.start().then(() => {
-        setConnection(connection);
-        console.log("SignalR Connected");
-        let cookieName = getCookie("username")
-        if(cookieName == null){
-          // adding user to database
-          fetch(`https://localhost:44368/users/create?username=${username}`, {
-            method: "POST"
-          })
-            .then((res) => {
-              if (!res.ok) throw new Error("User creation failed.");
-              return res.json(); // ⬅️ Parsiraj JSON iz odgovora
-            })
-            .then((createdUser) => {
-              console.log("User created:", createdUser);
-              setUsername(createdUser.username)
-              setCookieFunction("username", createdUser.username, 3); // Set cookie for 3 days
-              setCookieFunction("userId", createdUser.id, 3);
-              setUsername(createdUser.username)
-              // možeš: setUser(createdUser); ili spremiti u state itd.
-            })
-            .catch((err) => console.error("Error creating user:", err));
-
+      connection.on("ReceivePrivateMessage", (username, message, sentAt, chatRoom) => {
+        console.log("Received private message (iz ReceivePrivateMessage):", message, "from", username);
+        console.log("activeChat", activeChat);
+        console.log("chatRoom", chatRoom);
+        if(activeChat === chatRoom){
+          setMessages((prev) => [...prev, { username, message, sentAt }]);
         }
-        else {
-          setUsername(cookieName);
-        }
-        connection.invoke("JoinSpecificChatRoom").catch(function (err) {
-            return console.error("Error in JoinSpecificChatRoom", err.toString());
-        });
-        
-      }).catch(err => console.log("Error in connecting to SignalR ",err));
-      return () => {
-        connection.stop();
-      };
-  }, [])
+      });
+      */
+     connection.on("ReceiveSpecificMessage", (username, message, sentAt, chatRoom) => {
+  console.log("Dodajem grupnu poruku");
+  console.log("Ali je chatroom", chatRoom, "i activeChat", activeChatRef.current);
+  if(chatRoom === activeChatRef.current) {
+    setMessages((prev) => [...prev, { username, message, sentAt }]);
+  }
+});
+
+connection.on("ReceivePrivateMessage", (username, message, sentAt, chatRoom) => {
+  console.log("Received private message:", message, "from", username);
+  console.log("activeChat", activeChatRef.current);
+  console.log("chatRoom", chatRoom);
+  if(chatRoom === activeChatRef.current){
+    setMessages((prev) => [...prev, { username, message, sentAt }]);
+  }
+});
+
+
+  connection.start()
+    .then(() => {
+      setConnection(connection);
+      loadMessages("group");
+      return connection.invoke("JoinSpecificChatRoom");
+    })
+    .catch(err => console.error("SignalR connection error:", err));
+
+  return () => {
+    connection.stop();
+  };
+}, [username]);
+
+
+
+
 
   const loadMessages = (chatName) => {
     if(chatName === "group"){

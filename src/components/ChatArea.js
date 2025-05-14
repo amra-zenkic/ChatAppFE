@@ -7,9 +7,12 @@ const ChatArea = ({ activeChat, currentUser, messages, setMessages, conn, getCoo
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
 
+  
+
   // Scroll to bottom on new message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    console.log("Trenutni aktivni chat je:", activeChat);
     console.log("messages", messages);
   }, [messages]);
 
@@ -19,10 +22,10 @@ const ChatArea = ({ activeChat, currentUser, messages, setMessages, conn, getCoo
         try {
           //await conn.invoke("SendMessage", input);
           if (activeChat === "group") {
-            console.log("Sending message:", input, "from ", getCookie("userId"));
+            console.log("Sending group message:", input, "from userid ", getCookie("userId"));
             await conn.invoke("SendMessage",getCookie("userId"), input);
           } else {
-            console.log("Sending private message:", input, "from ", getCookie("userId"), "to", activeChat);
+            console.log("Sending private message (invoke):", input, "from ", getCookie("userId"), "to", activeChat);
             await conn.invoke("SendPrivateMessage", getCookie("userId"), activeChat, input);
           }
         } catch (error) {
@@ -43,7 +46,7 @@ const ChatArea = ({ activeChat, currentUser, messages, setMessages, conn, getCoo
         {messages.map((msg, idx) => (
           <div
             key={idx}
-            className={`message ${msg.username === currentUser ? "sent" : "received"}`}
+            className={`message ${msg.username === getCookie("username") ? "sent" : "received"}`}
           >
             <p className="message-username">{msg.username}</p>
             
