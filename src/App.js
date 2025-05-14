@@ -3,6 +3,8 @@ import Sidebar from "./components/Sidebar";
 import ChatArea from "./components/ChatArea";
 import "./App.css";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
 
@@ -81,7 +83,16 @@ useEffect(() => {
   connection.on("ReceiveMessage", (username, message, user, sentAt) => {
     console.log("NOVI KORISNIK", user.username);
     setActiveUsers((prev) => [...prev, user]);
-    setMessages((prev) => [...prev, { username, message, sentAt }]);
+    //setMessages((prev) => [...prev, { username, message, sentAt }]);
+    toast.info(`${user.username} joined the chat`, {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+
   });
 
   connection.on("ReceiveSpecificMessage", (username, message, sentAt, chatRoom) => {
@@ -102,9 +113,15 @@ connection.on("ReceivePrivateMessage", (username, message, sentAt, chatRoom) => 
 });
 connection.on("UserLeft", (userId, username) => {
   console.log("User left:", userId);
-  if(activeChatRef.current === userId || activeChatRef.current === "group"){
-    setMessages((prev) => [...prev, { username: "admin", message: `${username} left the ChatApp`, sentAt: new Date().toISOString() }]);
-  }
+  toast.info(`${username} left the chat`, {
+    position: "top-right",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+
   setActiveUsers((prev) => prev.filter(u => u.id !== userId));
 });
 
@@ -180,6 +197,7 @@ connection.on("UserLeft", (userId, username) => {
         conn={conn}
         getCookie={getCookie}
       />
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }
