@@ -156,7 +156,7 @@ connection.on("UserLeft", (userId, username) => {
     pauseOnHover: true,
     draggable: true,
   });
-
+  setStartedConversations((prev) => prev.filter(c => c.userId !== userId));
   setActiveUsers((prev) => prev.filter(u => u.id !== userId));
 });
 
