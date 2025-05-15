@@ -17,6 +17,15 @@
   padding: 10px;
   /*padding-right: 10px;  da ne seku poruke skrolbarom */
 }
+.admin-message {
+  text-align: center;
+  background-color: #555;
+  max-width: 30%;
+  margin: auto;
+  padding: 8px 15px;
+  border-radius: 10px;
+  opacity: 0.5;
+}
 
 
 .chat-header {

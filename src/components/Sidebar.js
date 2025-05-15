@@ -11,14 +11,14 @@ const Sidebar = ({
   activeUsers, 
   setActiveUsers, 
   getCookie, 
-  loadMessages,
- newGroupMessage}) => {
+ newGroupMessage,
+  activeChat,
+}) => {
   
   useEffect(() => {
     fetch("https://localhost:44368/users/active")
       .then((res) => res.json())
       .then((data) => {
-        // set all active users except current user
         const userId = getCookie("userId");
         console.log("active users",data)
         setActiveUsers(data.filter((user) => user.id !== userId));
@@ -29,17 +29,16 @@ const Sidebar = ({
     <div className={`sidebar ${show ? "show" : ""}`}>
       <div className="close-btn" onClick={closeSidebar}>×</div>
       <div className="sidebar-section">
+        <h2>Welcome {getCookie("username")}</h2>
         <h3>Inbox</h3>
         <div className="chat-item" onClick={() => { 
-          loadMessages("group"); 
+
           setActiveChat("group"); 
           closeSidebar(); }}>Group Chat {newGroupMessage && <span> 💬</span>}</div>
         {startedConversations.map((conversation) => (
           <div key={conversation.userId} className="chat-item" onClick={() => {
-            loadMessages(conversation.userId); 
             setActiveChat(conversation.userId); 
             setActiveChatUsername(conversation.username); 
-            // set prev.newMessages to false
             setStartedConversations((prev) => {
               return prev.map((c) => {
                 if (c.userId === conversation.userId) {
@@ -59,7 +58,6 @@ const Sidebar = ({
         <h3>Active Users</h3>
         {activeUsers.map((user) => (
           <div key={user.id} className="chat-item" onClick={() => {
-            loadMessages(user.id); 
             setActiveChat(user.id); 
             setActiveChatUsername(user.username); 
             closeSidebar(); }}>
