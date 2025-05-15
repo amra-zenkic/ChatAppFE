@@ -24,6 +24,7 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [activeUsers, setActiveUsers] = useState([]);
   const [startedConversations, setStartedConversations] = useState([]);
+  const [newGroupMessage, setNewGroupMessage] = useState(false);
 
   useEffect(() => {
     activeChatRef.current = activeChat;
@@ -44,6 +45,7 @@ function App() {
 	};
 
   const fetchGroupMessages = () => {
+    setNewGroupMessage(false);
     fetch("https://localhost:44368/messages/group")
       .then((res) => res.json())
       .then((data) => {
@@ -68,7 +70,6 @@ function App() {
           setCookieFunction("userId", data.id, 3);
           setCookieFunction("username", data.username, 3);
           setUsername(data.username);
-          //addSinglarConnection(data.username);
           
         });
     //}
@@ -99,29 +100,16 @@ useEffect(() => {
   connection.on("ReceiveSpecificMessage", (username, message, sentAt, chatRoom) => {
     console.log("Dodajem grupnu poruku");
     console.log("Ali je chatroom", chatRoom, "i activeChat", activeChatRef.current);
-    if(chatRoom === activeChatRef.current) {
+    if(chatRoom === activeChatRef.current) { // user is in chat room
       setMessages((prev) => [...prev, { username, message, sentAt }]);
+      
+    }
+    else {
+      setNewGroupMessage(true);
     }
   });
-/*
-connection.on("ReceivePrivateMessage", (username, message, sentAt, chatRoom) => {
-  console.log("Received private message:", message, "from", username);
-  console.log("activeChat", activeChatRef.current);
-  console.log("chatRoom", chatRoom);
-  // adding to startedConversations if it's the first message or if it's a new message marking it
-  
-  if(chatRoom === activeChatRef.current || username === getCookie("username")){
-    setMessages((prev) => [...prev, { username, message, sentAt }]);
-  }
-});
-*/
+
 connection.on("ReceivePrivateMessage", (sender, receiver, message, sentAt, chatRoom) => {
-  // senderUsername -sender, chatRoom - receiver/sender
-  console.log("Received private message:", message, "from", sender.username);
-  console.log("activeChat", activeChatRef.current);
-  console.log("chatRoom", chatRoom);
-
-
   // if its active chat add message
   if (chatRoom === activeChatRef.current || sender.username === getCookie("username")) {
     setMessages((prev) => [...prev, { username: sender.username, message, sentAt }]);
@@ -224,6 +212,7 @@ connection.on("UserLeft", (userId, username) => {
         setActiveUsers={setActiveUsers}
         getCookie={getCookie}
         loadMessages={loadMessages}
+        newGroupMessage={newGroupMessage}
       />
       <ChatArea
         activeChat={activeChat}

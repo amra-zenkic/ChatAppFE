@@ -1,7 +1,18 @@
 import React, { useEffect, useState } from "react";
 import "../Sidebar.css";
 
-const Sidebar = ({ setActiveChat, startedConversations,setStartedConversations,  setActiveChatUsername, show, closeSidebar, activeUsers, setActiveUsers, getCookie, loadMessages}) => {
+const Sidebar = ({ 
+  setActiveChat, 
+  startedConversations,
+  setStartedConversations,  
+  setActiveChatUsername, 
+  show, 
+  closeSidebar, 
+  activeUsers, 
+  setActiveUsers, 
+  getCookie, 
+  loadMessages,
+ newGroupMessage}) => {
   
   useEffect(() => {
     fetch("https://localhost:44368/users/active")
@@ -19,7 +30,10 @@ const Sidebar = ({ setActiveChat, startedConversations,setStartedConversations, 
       <div className="close-btn" onClick={closeSidebar}>×</div>
       <div className="sidebar-section">
         <h3>Inbox</h3>
-        <div className="chat-item" onClick={() => { loadMessages("group"); setActiveChat("group"); closeSidebar(); }}>Group Chat</div>
+        <div className="chat-item" onClick={() => { 
+          loadMessages("group"); 
+          setActiveChat("group"); 
+          closeSidebar(); }}>Group Chat {newGroupMessage && <span> 💬</span>}</div>
         {startedConversations.map((conversation) => (
           <div key={conversation.userId} className="chat-item" onClick={() => {
             loadMessages(conversation.userId); 
@@ -36,7 +50,7 @@ const Sidebar = ({ setActiveChat, startedConversations,setStartedConversations, 
             });
             closeSidebar(); }}>
             <span className="green-dot"></span> {conversation.username}
-            {conversation.newMessages && <span className="red-dot"> 💬</span>}
+            {conversation.newMessages && <span> 💬</span>}
           </div>
         ))}
       </div>
