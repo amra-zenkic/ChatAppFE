@@ -12,15 +12,15 @@ const Sidebar = ({
   setActiveUsers, 
   getCookie, 
  newGroupMessage,
-  activeChat,
+  setMessages
 }) => {
+  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
   
   useEffect(() => {
-    fetch("https://localhost:44368/users/active")
+    fetch(`${API_URL}/users/active`)
       .then((res) => res.json())
       .then((data) => {
         const userId = getCookie("userId");
-        console.log("active users",data)
         setActiveUsers(data.filter((user) => user.id !== userId));
       });
   }, [])
@@ -31,25 +31,31 @@ const Sidebar = ({
       <div className="sidebar-section">
         <h2>Welcome {getCookie("username")}</h2>
         <h3>Inbox</h3>
-        <div className="chat-item" onClick={() => { 
-
+        <div className="chat-item" onClick={() =>{
+          setMessages([]); 
           setActiveChat("group"); 
-          closeSidebar(); }}>Group Chat {newGroupMessage && <span> 💬</span>}</div>
+          closeSidebar(); }}>Group Chat {newGroupMessage != 0 && <span className="new-message-indicator">{newGroupMessage}</span>}</div>
         {startedConversations.map((conversation) => (
           <div key={conversation.userId} className="chat-item" onClick={() => {
-            setActiveChat(conversation.userId); 
+            setMessages([]);
+            setActiveChat(conversation.userId);
             setActiveChatUsername(conversation.username); 
             setStartedConversations((prev) => {
               return prev.map((c) => {
                 if (c.userId === conversation.userId) {
-                  return { ...c, newMessages: false };
+                  return { ...c, newMessages: 0 };
                 }
                 return c;
               });
             });
             closeSidebar(); }}>
             <span className="green-dot"></span> {conversation.username}
-            {conversation.newMessages && <span> 💬</span>}
+            {conversation.newMessages != 0 && (
+              <span className="new-message-indicator">
+                {conversation.newMessages}
+              </span>
+            )}
+            
           </div>
         ))}
       </div>
@@ -58,6 +64,7 @@ const Sidebar = ({
         <h3>Active Users</h3>
         {activeUsers.map((user) => (
           <div key={user.id} className="chat-item" onClick={() => {
+            setMessages([]);
             setActiveChat(user.id); 
             setActiveChatUsername(user.username); 
             closeSidebar(); }}>

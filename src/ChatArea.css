@@ -6,7 +6,6 @@
   padding: 0px;
   background-color: rgba(255, 255, 255, 0.04);
 }
-
 .messages {
   flex: 1;
   overflow-x: hidden;
@@ -15,7 +14,6 @@
   flex-direction: column;
   gap: 10px;
   padding: 10px;
-  /*padding-right: 10px;  da ne seku poruke skrolbarom */
 }
 .admin-message {
   text-align: center;
@@ -26,16 +24,11 @@
   border-radius: 10px;
   opacity: 0.5;
 }
-
-
 .chat-header {
   font-size: 1.2em;
   margin-bottom: 20px;
   text-align: center;
 }
-
-
-
 .message {
   max-width: 60%;
   min-width: 30%;
@@ -43,30 +36,25 @@
   border-radius: 10px;
   background-color: rgba(255, 255, 255, 0.1);
 }
-
 .sent {
   align-self: flex-end;
   background-color: #009688;
 }
-
 .received {
   align-self: flex-start;
   background-color: #555;
 }
-
 .chat-input {
   display: flex;
   margin-top: 10px;
   gap: 10px;
 }
-
 .chat-input input {
   flex: 1;
   padding: 10px;
   border: none;
   border-radius: 10px;
 }
-
 .chat-input button {
   padding: 10px 20px;
   background-color: #00bcd4;
@@ -96,13 +84,11 @@
   .app-container {
     flex-direction: column;
   }
-
   .sidebar {
     width: 100%;
     flex-direction: row;
     overflow-x: auto;
   }
-
   .message {
     max-width: 80%;
   }

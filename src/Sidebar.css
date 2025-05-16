@@ -1,12 +1,3 @@
-/*.sidebar {
-  width: 25%;
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  transition: transform 0.3s ease;
-}*/
 .sidebar {
   width: 25%;
   max-height: -webkit-fill-available;
@@ -16,17 +7,17 @@
   flex-direction: column;
   gap: 20px;
   transition: transform 0.3s ease;
-
-  /* Dodaj ovo: */
-  height: 100vh; /* zauzmi cijelu visinu prozora */
-  overflow-y: auto; /* omogući vertikalni scroll */
+  height: 100vh;
+  overflow-y: auto;
 }
-
-
+.new-message-indicator {
+  color: #3bb496;
+  float: right;
+  margin-right: 10px;
+}
 .sidebar-section h3 {
   margin-bottom: 10px;
 }
-
 .chat-item {
   padding: 10px;
   background-color: rgba(255, 255, 255, 0.08);
@@ -35,11 +26,9 @@
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
-
 .chat-item:hover {
   background-color: rgba(255, 255, 255, 0.15);
 }
-
 .green-dot {
   width: 10px;
   height: 10px;
@@ -48,14 +37,12 @@
   display: inline-block;
   margin-right: 8px;
 }
-
 .close-btn {
   display: none;
   font-size: 24px;
   align-self: flex-end;
   cursor: pointer;
 }
-
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
@@ -66,14 +53,12 @@
     background-color: rgba(0, 0, 0, 0.9);
     transform: translateX(-100%);
     z-index: 100;
-    padding: 20px; /* Dodano za prostor oko X dugmeta i sadržaja */
+    padding: 20px;
     box-sizing: border-box;
   }
-
   .sidebar.show {
     transform: translateX(0);
   }
-
   .close-btn {
     display: block;
     font-size: 28px;
@@ -82,7 +67,7 @@
     top: 20px;
     right: 20px;
     cursor: pointer;
-    z-index: 101; /* iznad sidebar sadržaja */
+    z-index: 101;
   }
 }
 
